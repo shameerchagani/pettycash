@@ -1,0 +1,11 @@
+<%-include('./partials/header.ejs')%>
+<% if(user.name!==undefined){%> 
+    <%-include('./partials/nav.ejs')%> 
+<%}%>
+<main class='container-fluid mx-auto'>
+    <table id="table1" class="table table-striped m-0">
+      <caption>Transactions</caption>  
+      <%-include('./partials/table.ejs')%>
+    </table> 
+</main>
+<%-include('./partials/footer.ejs')%>

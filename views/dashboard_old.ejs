@@ -1,0 +1,86 @@
+<%-include('./partials/header.ejs')%>
+<% if(user){%> 
+    <%-include('./partials/nav.ejs')%> 
+<%}%>
+<main class="container-fluid mx-auto">
+  <div><%-include ('./partials/messages')%></div>
+    <div class="container d-lg-flex flex-lg-wrap shadow">
+      <div class="col-lg-6 px-1 col-md-10 col-sm-12 d-flex justify-content-center align-items-center">
+        <div class="card mr-1 flex-grow-1">
+          <div class="card-title text-center fw-bold bg-success text-light py-1">Income</div>
+          <div class="card-body text-success fs-1 px-2 py-1 text-center fw-bolder"><%=incomeTotal[0].totalIncome.toLocaleString('en-US')%></div>
+        </div>
+        <div class="card mr-1 flex-grow-1">
+          <div class="card-title text-center fw-bold bg-danger text-light py-1">Expense</div>
+          <div class="card-body text-danger fs-1 px-2 py-1 text-center fw-bolder"><%=expenseTotal[0].totalExpense.toLocaleString('en-US')%></div>
+        </div>
+        <div class="card flex-grow-1">
+          <div class="card-title text-center fw-bold bg-dark text-light py-1">Balance</div>
+          <div class="card-body text-dark fs-1 px-2 py-1 text-center fw-bolder"><%=balance.toLocaleString('en-US')%></div>
+        </div>
+        
+      </div>
+      
+      
+        <div class="card p-3 shadow my-2 col-xs-12 col-sm-10 col-lg-6">
+            <div class="card-content m-0 p-0">
+                <div class="card-title lead text-teal">Add Transaction</div>
+                <div class="card-body">
+                    <form action="/addTransaction" method="POST">
+                          <div class="form-group row">
+                            <label for="date" class="col-form-label col-sm-4">Date</label>
+                            <div class="col-sm-8">
+                              <input class="inputDate form-control" type="date" id="date" name="date"
+                                value="<%=new Date().getFullYear()%>-<%=('0'+ (new Date().getMonth()+1)).slice(-2)%>-<%=('0'+(new Date().getDate())).slice(-2)%>"
+                                required />
+                            </div>
+                          </div>
+                          <div class="form-group row">
+                              <label for="type" class="col-form-label col-sm-4">Type</label>
+                              <div class="col-sm-8">
+                                <select id="type" name="type" class="form-control inputSelect">
+                                  <option value="" disabled selected>--Select Item--</option>
+                                  <option value="expense">Expense</option>
+                                  <option value="income">Income</option>
+                                  <option value="investment">Investment</option>
+                                </select>
+                              </div>
+                          </div>
+                          <div class="form-group row">
+                            <label for="name" class="col-form-label col-sm-4">Name</label>
+                            <div class="col-sm-8">
+                              <input class="form-control" type="text" id="name" name="name" required />
+                            </div>
+                          </div>
+                          <div class="form-group row">
+                            <label for="amount" class="col-form-label col-sm-4">Amount</label>
+                            <div class="col-sm-8">
+                              <input class="form-control" type="number" id="amount" name="amount" required />
+                            </div>
+                          </div>
+                          <div class="form-group row">
+                            <label for="comments" class="col-form-label col-sm-4">Comments</label>
+                            <div class="col-sm-8">
+                              <input class="form-control" type="text" id="comments" name="comments" required />
+                            </div>
+                          </div>
+                          <div class="text-center">
+                            <button class="btn btn-info bg-teal" type="submit">Add Transaction</button>
+                          </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+   <div class="mt-5">
+    <table id="table1" class="table table-striped m-0">
+      <caption>Transactions</caption>  
+      <%-include('./partials/table.ejs')%>
+      </table>
+   </div> 
+</main>
+
+</div>
+
+
+<%-include('./partials/footer.ejs')%>

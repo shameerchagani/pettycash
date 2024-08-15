@@ -1,0 +1,12 @@
+<% if(typeof errors!='undefined' ) { %> <% errors.forEach(function(error){ %>
+    <p class="mr-auto ml-auto alert alert-danger col-lg-6 col-sm-10 text-center p-0">
+      <%= error.msg %>
+    </p>
+    <% }) %> <% } %> <% if(success_msg!='' ) { %>
+    <p class="mr-auto ml-auto alert alert-success text-center col-lg-6 col-sm-10 p-0 py-1"><%=success_msg %></p>
+    <% } %> <% if(error_msg != '') { %>
+    <p class="error_msg alert alert-danger text-center col-lg-6 col-sm-10 p-0 py-1"><%= error_msg %></p>
+    <% } %> <% if(error != '') { %>
+    <p class="error_msg alert alert-danger text-center col-lg-6 col-sm-10 p-0 py-1"><%= error %></p>
+    <% } %>
+    

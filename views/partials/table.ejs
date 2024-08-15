@@ -1,0 +1,63 @@
+<thead class="bg-teal my-5 text-light text-center h6">
+    <tr>
+      <th scope="col">#SN</th>
+      <th>Date</th>
+      <th>Type</th>
+      <th>Name</th>
+      <th>Cash_In</th>
+      <th>Cash_Out</th>
+      <th>Comments</th>
+      <th>Action_btns</th>
+    </tr>
+  </thead>
+  <tbody class="align-center">
+    
+    <%transactions.forEach((transaction,index) =>{%>
+      <tr id="<%=transaction._id%>" class=<%=transaction.done==='y'?"done":""%>>
+        <td><%=Number(index) + 1%></td>
+        <td><%=transaction.date.toLocaleDateString('en-GB')%></td>
+        <td><%=transaction.type%></td>
+        <td><%=transaction.name%></td>
+        <td class="text-right text-success">
+          <%if(transaction.type==='Income'||transaction.type==='income'){%><b><%=transaction.amount.toLocaleString('en-US')%></b>
+          <%}%>
+        </td>
+        <td class="text-right text-danger">
+          <%if(transaction.type==='Expense' || transaction.type==='expense'){%><b><%=transaction.amount.toLocaleString('en-US')%></b>
+          <%}%>
+        </td>
+        <td class="text-center"><%=transaction.comments%></td>
+        <td class="text-center">
+          <%if(user.role==='admin' || transaction.done=='n'){%>
+          <a href="/updateTransaction/<%=transaction._id%>"
+          class="btn btn-sm btn-primary px-2 py-1"
+          title="Update"
+          >
+            <i class="far fa-calendar-check"></i>
+          </a>
+        <%}else{%>
+           <a href="#" class="btn btn-sm btn-info py-0">Done</a>
+          <%}%>
+
+        <% if(user.role==='admin'){%>
+          <%if(transaction.done==='n'){%>
+          <a href="/transactionDone/<%=transaction._id%>" 
+            class="btn btn-sm btn-success py-1">
+            <i class="fa fa-check"></i>
+          </a>
+          <%}else{%> 
+          <a href="/transactionNotDone/<%=transaction._id%>" 
+            class="btn btn-sm btn-warning px-2 py-1">
+            <i class="fa fa-times"></i>
+          </a>
+          <%}%>
+          <a href="/deleteTransaction/<%=transaction._id%>" 
+            class="btn btn-sm btn-danger px-2 py-1"
+            ><i class="fa fa-trash" title="Delete"></i>
+          </a>
+        <%}%></td>
+      </tr>
+    <%})%>
+  
+  </tbody>
+  

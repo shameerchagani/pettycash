@@ -1,0 +1,81 @@
+<%-include('./partials/header.ejs')%>
+<% if(user.name!==undefined){%> 
+    <%-include('./partials/nav.ejs')%> 
+<%}%>
+<main class='container-fluid mx-auto'>
+    <div class="">
+      
+      <small><%-include ('./partials/messages')%></small>
+        <div class="card p-3 shadow my-2 col-xs-12 col-sm-10 col-lg-5">
+            <div class="card-content m-0 p-0">
+                <div class="card-title lead">Add Transaction</div>
+                <div class="card-body">
+                    <form action="/updateTransaction/<%=transaction._id%>" method="POST">
+                      <small id="trsType"><%=transaction.type%></small>
+                          <div class="form-group row">
+                            <label for="date" class="col-form-label col-sm-4">Date</label>
+                            <div class="col-sm-8">
+                              <input class="inputDate form-control" type="date" id="date" name="date"
+                                value="<%=transaction.date.getFullYear()%>-<%=('0' + (transaction.date.getMonth()+1)).slice(-2)%>-<%=('0'+transaction.date.getDate()).slice(-2)%>"
+                                required />
+                            </div>
+                          </div>
+                          <div class="form-group row">
+                              <label for="type" class="col-form-label col-sm-4">Type</label>
+                              <div class="col-sm-8">
+                                <select id="type" name="type" class="form-control" required>
+                                  <option value="expense">Expense</option>
+                                  <option value="income">Income</option>
+                                  <option value="investment">Investment</option>
+                                </select>
+                              </div>
+                          </div>
+                          <div class="form-group row">
+                            <label for="name" class="col-form-label col-sm-4">Name</label>
+                            <div class="col-sm-8">
+                              <input class="form-control" type="text" id="name" name="name" value="<%=transaction.name%>" required />
+                            </div>
+                          </div>
+                          <div class="form-group row">
+                            <label for="amount" class="col-form-label col-sm-4">Amount</label>
+                            <div class="col-sm-8">
+                              <input class="form-control" type="number" id="amount" name="amount" value="<%=transaction.amount%>" required />
+                            </div>
+                          </div>
+                          <div class="form-group row">
+                            <label for="comments" class="col-form-label col-sm-4">Comments</label>
+                            <div class="col-sm-8">
+                              <input class="form-control" type="text" id="comments" name="comments" value="<%=transaction.comments%>" required />
+                            </div>
+                          </div>
+                          <div class="text-center">
+                            <button class="btn btn-info" type="submit">Update Transaction</button>
+                          </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+      window.addEventListener("load", setDBValues)
+                function setDBValues(){
+                    let options = document.querySelectorAll('#type option')
+                    //console.log(options.length)
+                    options.forEach(option =>{
+                      console.log(option)
+                        let type = document.getElementById('trsType')
+                        // console.log(type.innerText)
+                        // console.log(`type: ${type.value} and option: ${option.value}`)
+                        
+                        if(type.innerText === option.value){
+                            option.setAttribute("selected", "");     
+                        }
+                    })
+                }
+    
+    </script>
+
+</main>
+
+<%-include('./partials/footer.ejs')%>
