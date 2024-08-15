@@ -54,7 +54,7 @@ const user_register_handle = async (req, res) => {
           role,
         });
       } else {
-        const newUser = await new User({
+        const newUser = new User({
           name: name,
           email: email,
           password: password,
