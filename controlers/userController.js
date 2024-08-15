@@ -13,7 +13,7 @@ const user_register = (req, res) => {
 };
 
 //User Register Handle
-const user_register_handle = (req, res) => {
+const user_register_handle = async (req, res) => {
   const { name, email, password, password2, role } = req.body;
   let errors = [];
   //console.log(req.body);
@@ -41,7 +41,7 @@ const user_register_handle = (req, res) => {
     });
   } else {
     //validation passed
-    User.findOne({ email: email }).exec((err, user) => {
+    await User.findOne({ email: email }).exec((err, user) => {
       console.log(user);
       if (user) {
         errors.push({ msg: "email already registered" });
@@ -54,7 +54,7 @@ const user_register_handle = (req, res) => {
           role,
         });
       } else {
-        const newUser = new User({
+        const newUser = await new User({
           name: name,
           email: email,
           password: password,
@@ -83,16 +83,26 @@ const user_register_handle = (req, res) => {
   }
 };
 
-//Login Handler
 const user_login_handle = (req, res, next) => {
-  passport.authenticate("local", {
-    successRedirect: "/dashboard",
-    failureRedirect: "/users/login",
-    failureFlash: true,
-    author: req.body,
-    title: "Login",
+  passport.authenticate('local', (err, user, info) => {
+    if (err) {
+      return next(err); // Handle any errors that occur during authentication
+    }
+    if (!user) {
+      // Redirect to login page if authentication fails
+      req.flash('error', info.message); // Assuming 'info.message' contains a meaningful message
+      return res.redirect('/users/login');
+    }
+    // Log the user in and redirect to dashboard
+    req.logIn(user, (err) => {
+      if (err) {
+        return next(err); // Handle any errors that occur during login
+      }
+      return res.redirect('/dashboard');
+    });
   })(req, res, next);
 };
+
 
 //Logout Handler
 const user_logout = (req, res) => {

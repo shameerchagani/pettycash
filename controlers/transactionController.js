@@ -72,43 +72,57 @@ const allTransaction_get = async(req,res) => {
     res.render("allTransactions", {title: "All Transactions", appName: "Transactions-app", transactions, user: req.user })
 }
 
-//Get the Dash Board
-const dashboard_get = async(req,res) =>{
-
-//Get Total of Income
+const dashboard_get = async (req, res) => {
+  try {
+    // Get Total of Income
     const incomeTotal = await Transaction.aggregate([
-    {
-      $match: { type: "income" }
-    },
-    {
-      $group: {
-        _id: null,
-        totalIncome: { $sum: "$amount" }
+      { $match: { type: "income" } },
+      {
+        $group: {
+          _id: null,
+          totalIncome: { $sum: "$amount" }
+        }
       }
-    }
-  ])
+    ]);
 
-  //Get Total Expenses
-  const expenseTotal = await Transaction.aggregate([
-    {
-      $match: { type: "expense" }
-    },
-    {
-      $group: {
-        _id: null,
-        totalExpense: { $sum: "$amount" }
+    // Get Total Expenses
+    const expenseTotal = await Transaction.aggregate([
+      { $match: { type: "expense" } },
+      {
+        $group: {
+          _id: null,
+          totalExpense: { $sum: "$amount" }
+        }
       }
-    }
-  ])
-  // console.log(expenseTotal)
+    ]);
 
-//derive balance
-    const balance = Number(incomeTotal[0].totalIncome) - Number(expenseTotal[0].totalExpense)
+    // Derive balance
+    const totalIncome = incomeTotal.length > 0 ? incomeTotal[0].totalIncome : 0;
+    const totalExpense = expenseTotal.length > 0 ? expenseTotal[0].totalExpense : 0;
+    const balance = totalIncome - totalExpense;
 
-//Data Table
-    const transactions = await Transaction.find({}).sort({date: -1, name: 1}).limit(20)
-        res.render("dashboard", {title: "Dashboard", appName: "Transactions-app", incomeTotal, balance, expenseTotal, transactions, user: req.user })
-}
+    // Data Table
+    const transactions = await Transaction.find({})
+      .sort({ date: -1, name: 1 })
+      .limit(20)
+      .exec();
+
+    // Render the dashboard
+    res.render("dashboard", {
+      title: "Dashboard",
+      appName: "Transactions-app",
+      incomeTotal: totalIncome,
+      balance,
+      expenseTotal: totalExpense,
+      transactions,
+      user: req.user || {} // Ensure req.user is defined
+    });
+
+  } catch (error) {
+    console.error("Error fetching dashboard data:", error);
+    res.status(500).send("Internal Server Error");
+  }
+};
 
 //Get All Income Transactions
 const incomeTransaction_get = async(req,res) =>{
@@ -140,56 +154,111 @@ const pendingTransaction_get = async(req,res) =>{
   res.render("pendingTransactions", {title: "Pending Transactions", appName: "Transactions-app", transactions, user: req.user})
 }
 
-//Update The Transaction:
-const transaction_update = async (req, res) => {
-    const transaction = await Transaction.findByIdAndUpdate(
+const transaction_update = async (req, res, next) => {
+  try {
+    // Perform the update operation
+    const updatedTransaction = await Transaction.findByIdAndUpdate(
       req.params.id,
-      { $set: req.body, updated_by: req.user.name, updated_date: Date.now() },
-      (err, transaction) => {
-        if (err) return next(err);
-        req.flash("success_msg", "Transaction Updated Successfully");
-        res.redirect("/dashboard");
-      }
+      {
+        $set: req.body,
+        updated_by: req.user.name,
+        updated_date: Date.now()
+      },
+      { new: true } // Option to return the updated document
     );
-  };
+
+    // Check if the transaction was found and updated
+    if (!updatedTransaction) {
+      req.flash("error_msg", "Transaction not found");
+      return res.redirect("/dashboard");
+    }
+
+    // Success message and redirect
+    req.flash("success_msg", "Transaction Updated Successfully");
+    res.redirect("/dashboard");
+  } catch (err) {
+    // Handle errors
+    console.error("Error updating transaction:", err);
+    req.flash("error_msg", "An error occurred while updating the transaction");
+    res.redirect("/dashboard");
+  }
+};
 
 //Transaction Done y Controller
 const transaction_done = async (req, res, next) => {
-  if (req.user.role === "admin") {
-    const transaction = await Transaction.findByIdAndUpdate(
-      req.params.id,
-      {$set: {done: 'y'}, updated_By: req.user.name, updated_date: Date.now() },
-      (err, transaction) => {
-        if (err) return next(err);
-        req.flash("success_msg", "Transaction Marked Done Successfully");
-        //res.redirect("/pendingTransactions");
-	res.send("Done Successfully");
-      }
-    )
-  } else {
-  req.flash("error_msg", "You are not authorized to perform this Transaction.");
-  //res.redirect("/dashboard");
-    res.send("Error in marking as done");
-  }
-  };
+  try {
+    // Check if the user has admin role
+    if (req.user.role !== "admin") {
+      req.flash("error_msg", "You are not authorized to perform this transaction.");
+      return res.status(403).send("Error: Unauthorized");
+    }
 
-//Transaction Done n Controller
-const transaction_notDone = async (req, res, next) => {
-  if (req.user.role === "admin") {
-    const transaction = await Transaction.findByIdAndUpdate(
+    // Perform the update operation
+    const updatedTransaction = await Transaction.findByIdAndUpdate(
       req.params.id,
-      {$set: {done: 'n'}, updated_By: req.user.name, updated_date: Date.now() },
-      (err, transaction) => {
-        if (err) return next(err);
-        req.flash("success_msg", "Transaction Marked Done Successfully");
-        res.redirect("/pendingTransactions");
-      }
-    )
-  } else {
-  req.flash("error_msg", "You are not authorized to perform this Transaction.");
-  res.redirect("/pendingTransactions");
+      {
+        $set: { done: 'y' },
+        updated_By: req.user.name,
+        updated_date: Date.now()
+      },
+      { new: true } // Option to return the updated document
+    );
+
+    // Check if the transaction was found and updated
+    if (!updatedTransaction) {
+      req.flash("error_msg", "Transaction not found");
+      return res.status(404).send("Error: Transaction not found");
+    }
+
+    // Success message and response
+    req.flash("success_msg", "Transaction Marked Done Successfully");
+    res.send("Done Successfully");
+  } catch (err) {
+    // Handle errors
+    console.error("Error marking transaction as done:", err);
+    req.flash("error_msg", "An error occurred while updating the transaction");
+    res.status(500).send("Error: Internal Server Error");
   }
-  };
+};
+
+
+//Transaction not doen mark as N
+const transaction_notDone = async (req, res, next) => {
+  try {
+    // Check if the user has admin role
+    if (req.user.role !== "admin") {
+      req.flash("error_msg", "You are not authorized to perform this transaction.");
+      return res.redirect("/pendingTransactions");
+    }
+
+    // Perform the update operation
+    const updatedTransaction = await Transaction.findByIdAndUpdate(
+      req.params.id,
+      {
+        $set: { done: 'n' },
+        updated_By: req.user.name,
+        updated_date: Date.now()
+      },
+      { new: true } // Option to return the updated document
+    );
+
+    // Check if the transaction was found and updated
+    if (!updatedTransaction) {
+      req.flash("error_msg", "Transaction not found");
+      return res.redirect("/pendingTransactions");
+    }
+
+    // Success message and redirect
+    req.flash("success_msg", "Transaction Marked Not Done Successfully");
+    res.redirect("/pendingTransactions");
+  } catch (err) {
+    // Handle errors
+    console.error("Error marking transaction not done:", err);
+    req.flash("error_msg", "An error occurred while updating the transaction");
+    res.redirect("/pendingTransactions");
+  }
+};
+
 
   //Mark All as done
   const transaction_allDone = async (req, res, next) => {
@@ -208,19 +277,35 @@ const transaction_notDone = async (req, res, next) => {
     }
   };
 
-//Transaction Delete Controller
-const transaction_delete = async (req, res) => {
-    if (req.user.role === "admin") {
-      const transaction = await Transaction.findByIdAndDelete(req.params.id, (err, transaction) => {
-        if (err) return next(err);
-        req.flash("success_msg", "Transaction Deleted successfully");
-        res.redirect("/dashboard");
-      });
-    } else {
-      req.flash("error_msg", "You are not authorized to delete entry");
-      res.redirect("/dashboard");
+//Delete a transaction
+const transaction_delete = async (req, res, next) => {
+  try {
+    // Check if the user has admin role
+    if (req.user.role !== "admin") {
+      req.flash("error_msg", "You are not authorized to delete this entry");
+      return res.redirect("/dashboard");
     }
-  };
+
+    // Perform the delete operation
+    const deletedTransaction = await Transaction.findByIdAndDelete(req.params.id);
+
+    // Check if the transaction was found and deleted
+    if (!deletedTransaction) {
+      req.flash("error_msg", "Transaction not found");
+      return res.redirect("/dashboard");
+    }
+
+    // Success message and redirect
+    req.flash("success_msg", "Transaction Deleted successfully");
+    res.redirect("/dashboard");
+  } catch (err) {
+    // Handle errors
+    console.error("Error deleting transaction:", err);
+    req.flash("error_msg", "An error occurred while deleting the transaction");
+    res.redirect("/dashboard");
+  }
+};
+
   
 
 

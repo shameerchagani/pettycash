@@ -15,7 +15,7 @@ router.get("/register", (req, res) => {
 });
 
 //Dashboard and/or All Transactions
-router.get("/dashboard", transactionController.dashboard_get)
+router.get("/dashboard", ensureAuthenticated, transactionController.dashboard_get)
 
 //Get All The Transactions
 router.get("/allTransactions", ensureAuthenticated, transactionController.allTransaction_get)

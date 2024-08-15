@@ -5,17 +5,17 @@ const router = express.Router();
 const app = express();
 const mongoose = require('mongoose');
 const expressEjsLayout = require('express-ejs-layouts');
-const PORT = process.env.PORT || 8083;
+const PORT = process.env.PORT || 3002;
 const db = process.env.dbPassword;
 const passport = require('passport');
 require("./config/passport")(passport);
 const flash = require('connect-flash');
 const session = require('express-session');
 const cors = require("cors")
-const MongoStore = require("connect-mongo"); 
+
 
 //mongoose connection
-mongoose.connect(db,{useNewUrlParser: true , useUnifiedTopology: true, useFindAndModify: false})
+mongoose.connect(db,{})
 .then(() => console.log('connected to MongoDB'))
 .then(() => app.listen(PORT,()=>console.log(`Server Running On Port: ${PORT}`)))
 .catch((err)=> console.log(err));
@@ -28,15 +28,16 @@ app.set('view engine','ejs');
 app.use(express.urlencoded({extended : false}));
 app.use(express.static(__dirname + '/public'));
 
+
+//Initialize Helmet
+//app.use(cors());
+//app.use(helmet({}));
+
 //express session
 app.use(session({
     secret : 'secret',
     resave : true,
-    saveUninitialized : true,
-    store: MongoStore.create({
-      mongoUrl: process.env.dbPassword,
-    })
-	
+    saveUninitialized : true
 }));
 
 app.use(passport.initialize());

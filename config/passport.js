@@ -2,7 +2,7 @@ const LocalStrategy = require('passport-local').Strategy;
 const bcrypt = require('bcrypt');
 const User = require("../models/user");
 
-module.exports = function(passport) {
+module.exports = async function(passport) {
     passport.use(
         new LocalStrategy({usernameField : 'email'},(email,password,done)=> {
                 //match user
@@ -30,9 +30,15 @@ module.exports = function(passport) {
         done(null, user.id);
       });
       
-      passport.deserializeUser(function(id, done) {
-        User.findById(id, function(err, user) {
-          done(err, user);
-        });
-      }); 
+    passport.deserializeUser(async (id, done) => {
+      try {
+        // Use async/await to fetch the user
+        const user = await User.findById(id);
+        // Call the done callback with the error (if any) and user object
+        done(null, user);
+      } catch (err) {
+        // Handle any errors that occur
+        done(err, null);
+  }
+});
 };

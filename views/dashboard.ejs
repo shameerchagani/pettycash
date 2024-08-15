@@ -15,16 +15,16 @@
       <!--       income amount card -->
             <div class='card mx-1 flex-grow-1'>
               <div class='card-title text-center fw-bold bg-success text-light py-1'>Income</div>
-              <span id="incomeAmount" class="d-none"><%=incomeTotal[0].totalIncome%></span>
+              <span id="incomeAmount" class="d-none"><%=incomeTotal%></span>
               <div class="card-body text-success text-center p-1 fs-5">
-                <%=incomeTotal[0].totalIncome.toLocaleString('en-US')%>
+                <%=incomeTotal.toLocaleString('en-US')%>
               </div>
             </div>
       <!--       Expense Amount Card -->
             <div class='card mx-1 flex-grow-1'><div class='card-title text-center fw-bold bg-danger text-light py-1'>Expense</div>
-              <span id="expenseAmount" class="d-none"><%=expenseTotal[0].totalExpense%></span>
+              <span id="expenseAmount" class="d-none"><%=expenseTotal%></span>
               <div class="card-body text-danger text-center p-1 fs-5">
-                <%=expenseTotal[0].totalExpense.toLocaleString('en-US')%>
+                <%=expenseTotal.toLocaleString('en-US')%>
               </div>
                 
             </div>
